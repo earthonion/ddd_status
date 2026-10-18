@@ -1,0 +1,44 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LLVM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y llvm clang lld
+
+      - name: Download PS5 SDK
+        run: |
+          curl -sL "$(gh api repos/ps5-payload-dev/sdk/releases/latest --jq '.assets[0].browser_download_url')" -o ps5-sdk.zip
+          unzip -q ps5-sdk.zip -d ps5-sdk
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Build PS5
+        run: make PS5_PAYLOAD_SDK=$PWD/ps5-sdk/ps5-payload-sdk
+
+      - name: Get short SHA
+        id: sha
+        run: echo "short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Create Release
+        run: |
+          gh release delete latest --yes 2>/dev/null || true
+          gh release create latest \
+            --title "Build ${{ steps.sha.outputs.short }}" \
+            --notes "Automated build from commit ${{ github.sha }}" \
+            --prerelease \
+            ddd-status.elf \
+        env:
+          GH_TOKEN: ${{ github.token }}
