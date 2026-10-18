@@ -81,7 +81,7 @@ int main(void) {
     };
     FILE *fptr = fopen("/mnt/usb0/ddd.txt", "wb");
     if (st) {
-        notify("digital (no drive)");
+        notify("drive not detachable (probably a phat)");
     }
     else{
         
