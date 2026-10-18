@@ -39,6 +39,6 @@ jobs:
             --title "Build ${{ steps.sha.outputs.short }}" \
             --notes "Automated build from commit ${{ github.sha }}" \
             --prerelease \
-            ddd-status.elf \
+            ddd_status.elf \
         env:
           GH_TOKEN: ${{ github.token }}
